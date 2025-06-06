@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AlertTriangle, Shield, Activity, Users, DollarSign, MapPin, Clock, TrendingUp, Eye, Ban, CheckCircle, XCircle } from 'lucide-react';
+import {
+  AlertTriangle, Shield, Activity, Users, MapPin, Clock, TrendingUp, Eye, Ban, CheckCircle, BarChart3
+} from 'lucide-react';
+
+import {
+  LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+
+
 
 const FraudDetectionSystem = () => {
+  //this line is updated 07/06/2025
+  const [riskScoreHistory, setRiskScoreHistory] = useState([]);
+
   const [transactions, setTransactions] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
@@ -246,7 +257,17 @@ const FraudDetectionSystem = () => {
         if (alert) {
           setAlerts(prev => [alert, ...prev.slice(0, 19)]);
         }
-
+        //this is update 07/06/2025
+        //here
+        setRiskScoreHistory(prev => [
+          ...prev.slice(-19), // keep only the last 20 data points
+          {
+            timestamp: new Date().toLocaleTimeString(), // x-axis label
+            riskScore: newTransaction.riskScore         // y-axis value
+          }
+        ]);
+        // till here
+        
         // Generate ML insights periodically
         if (Math.random() < 0.3) {
           const insights = generateMLInsights();
@@ -430,6 +451,45 @@ const FraudDetectionSystem = () => {
             </div>
           </div>
         )}
+
+        {/* this section is updated on 07/06/25 */}
+
+       {/* 📊 Enhanced Analytics Dashboard */}
+<div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl shadow-md p-6 sm:p-8 mb-8 transition-all hover:shadow-xl">
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-2xl font-semibold text-gray-800 tracking-tight flex items-center">
+      <BarChart3 className="w-6 h-6 text-blue-600 mr-2" />
+      Risk Score Trends
+    </h2>
+    <span className="inline-block text-xs text-blue-800 bg-blue-100 px-3 py-1 rounded-full">
+      Live updating every 2s
+    </span>
+  </div>
+
+  <ResponsiveContainer width="100%" height={300}>
+    <RechartsLineChart data={riskScoreHistory}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="timestamp" tick={{ fontSize: 12 }} />
+      <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+      <Tooltip 
+        contentStyle={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}
+        labelStyle={{ color: '#6b7280', fontWeight: 'bold' }}
+      />
+      <Legend />
+      <Line
+        type="monotone"
+        dataKey="riskScore"
+        stroke="#6366f1"
+        strokeWidth={3}
+        dot={{ r: 4 }}
+        activeDot={{ r: 6 }}
+      />
+    </RechartsLineChart>
+  </ResponsiveContainer>
+</div>
+
+        {/*till here */}
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Real-time Alerts */}
