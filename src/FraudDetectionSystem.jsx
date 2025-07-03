@@ -22,12 +22,13 @@ const FraudDetectionSystem = () => {
     blockedTransactions: 0,
     riskScore: 0
   });
-  const [mlModel, setMlModel] = useState({
-    userProfiles: new Map(),
-    merchantProfiles: new Map(),
-    timePatterns: new Map(),
-    anomalyThreshold: 0.7
-  });
+  const [mlModel] = useState({
+  userProfiles: new Map(),
+  merchantProfiles: new Map(),
+  timePatterns: new Map(),
+  anomalyThreshold: 0.7
+});
+
   const [mlInsights, setMlInsights] = useState([]);
   const intervalRef = useRef();
 
