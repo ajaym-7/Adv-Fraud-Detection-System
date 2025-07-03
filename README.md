@@ -8,7 +8,13 @@ A real-time fraud detection dashboard built with React that combines traditional
 
 ##  Live Demo
 
-[View Live Demo](https://yourusername.github.io/fraud-detection-system/) 
+[View Live Demo](https://ajaym-7.github.io/Adv-Fraud-Detection-System/) 
+
+## Screenshots
+![alt text](public/Dashboard_ML_Insights.png)
+![alt text](public/Machine_Learning.png)
+![alt text](public/RiskScoreChart.png)
+![alt text](public/Alerts_&_Live_Transaction_Feed.png)
 
 ##  Table of Contents
 

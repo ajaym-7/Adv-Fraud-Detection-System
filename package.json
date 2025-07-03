@@ -2,6 +2,7 @@
   "name": "fraud-detection-dashboard",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://ajaym-7.github.io/Adv-Fraud-Detection-System/",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -17,9 +18,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "dev": "react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-     "predeploy": "npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
@@ -42,6 +44,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.1"
   }
