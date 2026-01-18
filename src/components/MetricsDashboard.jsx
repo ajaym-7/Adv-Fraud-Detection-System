@@ -4,8 +4,8 @@ import { BarChart3, TrendingUp, AlertCircle, CheckCircle, Target } from 'lucide-
 const MetricsDashboard = ({ metrics, confusionMatrix }) => {
   if (!metrics) {
     return (
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-        <p className="text-gray-400 text-center">No model metrics available. Train a model first.</p>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <p className="text-gray-500 text-center">No metrics available. Train a model first.</p>
       </div>
     );
   }
@@ -13,111 +13,98 @@ const MetricsDashboard = ({ metrics, confusionMatrix }) => {
   const { accuracy, precision, recall, f1Score } = metrics;
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-      <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
-        <BarChart3 className="w-5 h-5 text-blue-400" />
-        Model Performance Metrics
+    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-base font-semibold mb-6 text-gray-900 flex items-center gap-2">
+        <BarChart3 className="w-4 h-4 text-emerald-500" />
+        Performance Metrics
       </h2>
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <MetricCard
           title="Accuracy"
-          value={`${(parseFloat(accuracy) * 100).toFixed(2)}%`}
-          icon={<Target className="w-5 h-5" />}
-          color="blue"
-          description="Overall correctness"
+          value={`${(parseFloat(accuracy) * 100).toFixed(1)}%`}
+          icon={<Target className="w-4 h-4" />}
+          color="emerald"
         />
         <MetricCard
           title="Precision"
-          value={`${(parseFloat(precision) * 100).toFixed(2)}%`}
-          icon={<CheckCircle className="w-5 h-5" />}
-          color="green"
-          description="Fraud predictions accuracy"
+          value={`${(parseFloat(precision) * 100).toFixed(1)}%`}
+          icon={<CheckCircle className="w-4 h-4" />}
+          color="emerald"
         />
         <MetricCard
           title="Recall"
-          value={`${(parseFloat(recall) * 100).toFixed(2)}%`}
-          icon={<AlertCircle className="w-5 h-5" />}
-          color="orange"
-          description="Fraud detection rate"
+          value={`${(parseFloat(recall) * 100).toFixed(1)}%`}
+          icon={<AlertCircle className="w-4 h-4" />}
+          color="emerald"
         />
         <MetricCard
           title="F1 Score"
-          value={`${(parseFloat(f1Score) * 100).toFixed(2)}%`}
-          icon={<TrendingUp className="w-5 h-5" />}
-          color="purple"
-          description="Balanced performance"
+          value={`${(parseFloat(f1Score) * 100).toFixed(1)}%`}
+          icon={<TrendingUp className="w-4 h-4" />}
+          color="emerald"
         />
       </div>
 
       {/* Confusion Matrix */}
       {confusionMatrix && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4 text-white">Confusion Matrix</h3>
-          <div className="grid grid-cols-2 gap-4 max-w-2xl">
-            <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4">
-              <div className="text-green-300 font-medium text-sm mb-1">True Negatives</div>
-              <div className="text-3xl font-bold text-green-400">
+          <h3 className="text-sm font-medium mb-4 text-gray-700">Confusion Matrix</h3>
+          <div className="grid grid-cols-2 gap-3 max-w-xl">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+              <div className="text-emerald-700 font-medium text-xs mb-1">True Negatives</div>
+              <div className="text-2xl font-bold text-emerald-600">
                 {confusionMatrix.trueNegatives.toLocaleString()}
               </div>
-              <div className="text-xs text-green-400/70 mt-1">Correctly identified as legitimate</div>
+              <div className="text-xs text-emerald-600/70 mt-0.5">Correctly identified legitimate</div>
             </div>
-            <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4">
-              <div className="text-red-300 font-medium text-sm mb-1">False Positives</div>
-              <div className="text-3xl font-bold text-red-400">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="text-red-700 font-medium text-xs mb-1">False Positives</div>
+              <div className="text-2xl font-bold text-red-600">
                 {confusionMatrix.falsePositives.toLocaleString()}
               </div>
-              <div className="text-xs text-red-400/70 mt-1">Incorrectly flagged as fraud</div>
+              <div className="text-xs text-red-600/70 mt-0.5">Incorrectly flagged as fraud</div>
             </div>
-            <div className="bg-orange-500/20 border border-orange-500/30 rounded-xl p-4">
-              <div className="text-orange-300 font-medium text-sm mb-1">False Negatives</div>
-              <div className="text-3xl font-bold text-orange-400">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div className="text-amber-700 font-medium text-xs mb-1">False Negatives</div>
+              <div className="text-2xl font-bold text-amber-600">
                 {confusionMatrix.falseNegatives.toLocaleString()}
               </div>
-              <div className="text-xs text-orange-400/70 mt-1">Missed fraud cases</div>
+              <div className="text-xs text-amber-600/70 mt-0.5">Missed fraud cases</div>
             </div>
-            <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4">
-              <div className="text-blue-300 font-medium text-sm mb-1">True Positives</div>
-              <div className="text-3xl font-bold text-blue-400">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="text-blue-700 font-medium text-xs mb-1">True Positives</div>
+              <div className="text-2xl font-bold text-blue-600">
                 {confusionMatrix.truePositives.toLocaleString()}
               </div>
-              <div className="text-xs text-blue-400/70 mt-1">Correctly detected fraud</div>
+              <div className="text-xs text-blue-600/70 mt-0.5">Correctly detected fraud</div>
             </div>
           </div>
         </div>
       )}
 
       {/* Interpretation Guide */}
-      <div className="bg-gray-700/30 border border-white/10 rounded-xl p-4">
-        <h4 className="font-semibold mb-2 text-white">Metrics Interpretation:</h4>
-        <ul className="text-sm text-gray-300 space-y-1">
-          <li><strong className="text-blue-400">Accuracy:</strong> {interpretAccuracy(parseFloat(accuracy))}</li>
-          <li><strong className="text-green-400">Precision:</strong> {interpretPrecision(parseFloat(precision))}</li>
-          <li><strong className="text-orange-400">Recall:</strong> {interpretRecall(parseFloat(recall))}</li>
-          <li><strong className="text-purple-400">F1 Score:</strong> Harmonic mean of precision and recall - higher is better</li>
+      <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
+        <h4 className="font-medium mb-2 text-gray-700 text-sm">Interpretation</h4>
+        <ul className="text-sm text-gray-600 space-y-1">
+          <li><span className="text-emerald-600 font-medium">Accuracy:</span> {interpretAccuracy(parseFloat(accuracy))}</li>
+          <li><span className="text-emerald-600 font-medium">Precision:</span> {interpretPrecision(parseFloat(precision))}</li>
+          <li><span className="text-emerald-600 font-medium">Recall:</span> {interpretRecall(parseFloat(recall))}</li>
         </ul>
       </div>
     </div>
   );
 };
 
-const MetricCard = ({ title, value, icon, color, description }) => {
-  const colorClasses = {
-    blue: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
-    green: 'bg-green-500/20 border-green-500/30 text-green-400',
-    orange: 'bg-orange-500/20 border-orange-500/30 text-orange-400',
-    purple: 'bg-purple-500/20 border-purple-500/30 text-purple-400'
-  };
-
+const MetricCard = ({ title, value, icon, color }) => {
   return (
-    <div className={`${colorClasses[color]} border rounded-xl p-4`}>
+    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium opacity-80">{title}</span>
-        {icon}
+        <span className="text-xs font-medium text-gray-500">{title}</span>
+        <span className="text-emerald-500">{icon}</span>
       </div>
-      <div className="text-3xl font-bold mb-1">{value}</div>
-      <div className="text-xs opacity-70">{description}</div>
+      <div className="text-2xl font-bold text-gray-900">{value}</div>
     </div>
   );
 };

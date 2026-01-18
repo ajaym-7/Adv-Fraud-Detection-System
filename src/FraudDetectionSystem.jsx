@@ -40,6 +40,9 @@ const FraudDetectionSystem = () => {
   };
 
   const getFeatureNames = (data) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
     return Object.keys(data[0]).filter(k => 
       typeof data[0][k] === 'number' && k !== 'Class'
     );
@@ -69,7 +72,7 @@ const FraudDetectionSystem = () => {
 
     // Sample features (sqrt of total features for randomness)
     const numFeaturesToTry = Math.ceil(Math.sqrt(featureNames.length));
-    const shuffledFeatures = [...featureNames].sort(() => Math.random() - 0.5);
+    const shuffledFeatures = shuffleArray(featureNames);
     const featuresToTry = shuffledFeatures.slice(0, numFeaturesToTry);
 
     for (const feature of featuresToTry) {
@@ -182,10 +185,10 @@ const FraudDetectionSystem = () => {
       const fraudSampleSize = Math.min(fraudCases.length * 3, Math.floor(sampleSize * 0.3)); // Up to 30% fraud
       const legitSampleSize = sampleSize - fraudSampleSize;
       
-      const bootstrapSample = [
+      const bootstrapSample = shuffleArray([
         ...subsample(fraudCases, fraudSampleSize),
         ...subsample(legitCases, legitSampleSize)
-      ].sort(() => Math.random() - 0.5);
+      ]);
       
       trees.push(buildDecisionTree(bootstrapSample, 0, featureNames));
       
@@ -209,7 +212,23 @@ const FraudDetectionSystem = () => {
 
   // Predict with Random Forest
   const predictRandomForest = useCallback((transaction, model) => {
-    const probabilities = model.trees.map(tree => predictWithTree(transaction, tree));
+    // Inline predictWithTree to satisfy exhaustive-deps
+    const predictWithTreeInline = (trans, tree) => {
+      if (tree.type === 'leaf') {
+        return tree.probability;
+      }
+      const value = trans[tree.feature];
+      if (value === undefined || isNaN(value)) {
+        return 0.5;
+      }
+      if (value < tree.splitValue) {
+        return predictWithTreeInline(trans, tree.left);
+      } else {
+        return predictWithTreeInline(trans, tree.right);
+      }
+    };
+
+    const probabilities = model.trees.map(tree => predictWithTreeInline(transaction, tree));
     const avgProb = probabilities.reduce((a, b) => a + b, 0) / probabilities.length;
     
     return {
@@ -253,8 +272,8 @@ const FraudDetectionSystem = () => {
     const values = data.map(d => d[feature]).filter(v => !isNaN(v));
     if (values.length === 0) return { type: 'leaf', size: data.length };
     
-    const minVal = Math.min(...values);
-    const maxVal = Math.max(...values);
+    const minVal = values.reduce((min, v) => v < min ? v : min, values[0]);
+    const maxVal = values.reduce((max, v) => v > max ? v : max, values[0]);
     
     if (minVal === maxVal) return { type: 'leaf', size: data.length };
     
@@ -295,7 +314,7 @@ const FraudDetectionSystem = () => {
       type: 'isolationForest',
       trees,
       numTrees,
-      subSampleSize: 256,
+      subSampleSize,
       features: Object.keys(data[0]).filter(k => typeof data[0][k] === 'number' && k !== 'Class')
     };
   };
@@ -318,10 +337,20 @@ const FraudDetectionSystem = () => {
       return 2 * (Math.log(n - 1) + 0.5772156649) - (2 * (n - 1) / n);
     };
 
+    // Helper to get the leaf count of a subtree
+    const getNodeSize = (node) => {
+      if (node.type === 'leaf') return node.size;
+      return getNodeSize(node.left) + getNodeSize(node.right);
+    };
+
     const pathLength = (point, tree, depth = 0) => {
       if (tree.type === 'leaf') return depth + c(tree.size);
       const value = point[tree.feature];
-      if (value === undefined || isNaN(value)) return depth + c(tree.size);
+      if (value === undefined || isNaN(value)) {
+        // For internal nodes, compute size from subtree
+        const nodeSize = getNodeSize(tree);
+        return depth + c(nodeSize);
+      }
       return value < tree.splitValue 
         ? pathLength(point, tree.left, depth + 1)
         : pathLength(point, tree.right, depth + 1);
@@ -342,8 +371,18 @@ const FraudDetectionSystem = () => {
 
   // ============== COMMON FUNCTIONS ==============
 
+  // Fisher-Yates shuffle for unbiased randomness
+  const shuffleArray = (array) => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
   const subsample = (data, size) => {
-    const shuffled = [...data].sort(() => Math.random() - 0.5);
+    const shuffled = shuffleArray(data);
     return shuffled.slice(0, Math.min(size, data.length));
   };
 
@@ -399,7 +438,7 @@ const FraudDetectionSystem = () => {
     setTimeout(async () => {
       try {
         setTrainingProgress({ stage: 'Splitting train/test data...', percent: 8 });
-        const shuffled = [...realDataset].sort(() => Math.random() - 0.5);
+        const shuffled = shuffleArray(realDataset);
         const testSize = Math.floor(realDataset.length * 0.2);
         const trainData = shuffled.slice(testSize);
         const currentTestData = shuffled.slice(0, testSize);
@@ -489,105 +528,105 @@ const FraudDetectionSystem = () => {
   }, [trainedModel, testData, predictRandomForest, predictIsolationForest]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-black/30 backdrop-blur-sm border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <Cpu className="w-6 h-6 text-white" />
+            <div className="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Cpu className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Fraud Detection System</h1>
-              <p className="text-xs text-gray-400">Machine Learning Powered</p>
+              <h1 className="text-lg font-semibold text-gray-900">Fraud Detection</h1>
+              <p className="text-xs text-gray-500">ML-Powered Analysis</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {trainedModel && (
-              <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full border border-green-500/30">
-                Model Trained
+              <span className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-sm font-medium rounded-full">
+                Model Ready
               </span>
             )}
             {datasetStats && (
-              <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full border border-blue-500/30">
-                {datasetStats.totalTransactions.toLocaleString()} transactions
+              <span className="px-3 py-1.5 bg-gray-100 text-gray-600 text-sm rounded-full">
+                {datasetStats.totalTransactions.toLocaleString()} records
               </span>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-8">
         <DataUploader onDataLoaded={handleDataLoaded} onModelTrained={handleModelTrained} />
 
         {/* Training Progress */}
         {training && (
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 mb-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <div className="animate-pulse w-3 h-3 bg-blue-500 rounded-full" />
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="animate-pulse w-2.5 h-2.5 bg-emerald-500 rounded-full" />
               Training in Progress
             </h3>
             <div className="mb-4">
-              <div className="flex justify-between text-sm text-gray-300 mb-2">
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
                 <span>{trainingProgress.stage}</span>
-                <span className="font-mono">{trainingProgress.percent}%</span>
+                <span className="font-mono text-emerald-600">{trainingProgress.percent}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-500 ease-out"
+                  className="bg-emerald-500 h-2 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${trainingProgress.percent}%` }}
                 />
               </div>
             </div>
             <div className="flex items-center justify-center">
-              <div className="animate-spin w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full mr-3" />
-              <span className="text-gray-400 text-sm">Please wait while the model is being trained...</span>
+              <div className="animate-spin w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full mr-2" />
+              <span className="text-gray-500 text-sm">Processing dataset...</span>
             </div>
           </div>
         )}
 
         {/* Model Selection & Configuration */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 mb-6">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-purple-400" />
-            Model Configuration
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+          <h2 className="text-base font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-emerald-500" />
+            Configuration
           </h2>
 
           {/* Model Type Selection */}
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-300 mb-3">Select Model Type</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Model Type</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 onClick={() => { setModelType('randomForest'); setThreshold(0.5); }}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                className={`p-4 rounded-xl border-2 transition-all text-left ${
                   modelType === 'randomForest' 
-                    ? 'border-green-500 bg-green-500/20' 
-                    : 'border-white/20 bg-white/5 hover:border-white/40'
+                    ? 'border-emerald-500 bg-emerald-50' 
+                    : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <TreeDeciduous className={`w-5 h-5 ${modelType === 'randomForest' ? 'text-green-400' : 'text-gray-400'}`} />
-                  <span className="font-medium text-white">Random Forest</span>
-                  <span className="text-xs bg-green-500/30 text-green-300 px-2 py-0.5 rounded-full">Recommended</span>
+                  <TreeDeciduous className={`w-5 h-5 ${modelType === 'randomForest' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                  <span className={`font-medium ${modelType === 'randomForest' ? 'text-emerald-700' : 'text-gray-700'}`}>Random Forest</span>
+                  <span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full">Recommended</span>
                 </div>
-                <p className="text-xs text-gray-400 text-left">
+                <p className="text-xs text-gray-500">
                   Supervised learning - uses fraud labels for training. Better accuracy for labeled datasets.
                 </p>
               </button>
               
               <button
                 onClick={() => { setModelType('isolationForest'); setThreshold(0.6); }}
-                className={`p-4 rounded-xl border-2 transition-all ${
+                className={`p-4 rounded-xl border-2 transition-all text-left ${
                   modelType === 'isolationForest' 
-                    ? 'border-purple-500 bg-purple-500/20' 
-                    : 'border-white/20 bg-white/5 hover:border-white/40'
+                    ? 'border-emerald-500 bg-emerald-50' 
+                    : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className={`w-5 h-5 ${modelType === 'isolationForest' ? 'text-purple-400' : 'text-gray-400'}`} />
-                  <span className="font-medium text-white">Isolation Forest</span>
+                  <Zap className={`w-5 h-5 ${modelType === 'isolationForest' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                  <span className={`font-medium ${modelType === 'isolationForest' ? 'text-emerald-700' : 'text-gray-700'}`}>Isolation Forest</span>
                 </div>
-                <p className="text-xs text-gray-400 text-left">
+                <p className="text-xs text-gray-500">
                   Unsupervised anomaly detection - finds outliers without labels. Good for new fraud patterns.
                 </p>
               </button>
@@ -597,9 +636,9 @@ const FraudDetectionSystem = () => {
           {/* Common Parameters */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                <Target className="w-4 h-4 text-purple-400" />
-                Detection Threshold: <span className="text-purple-400 font-mono">{threshold.toFixed(2)}</span>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <Target className="w-4 h-4 text-emerald-500" />
+                Threshold: <span className="text-emerald-600 font-mono">{threshold.toFixed(2)}</span>
               </label>
               <input
                 type="range"
@@ -608,18 +647,18 @@ const FraudDetectionSystem = () => {
                 step="0.05"
                 value={threshold}
                 onChange={(e) => setThreshold(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-700 rounded-lg cursor-pointer accent-purple-500"
+                className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer accent-emerald-500"
               />
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-gray-400">
                 <span>More Recall</span>
                 <span>More Precision</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                <Layers className="w-4 h-4 text-green-400" />
-                Number of Trees: <span className="text-green-400 font-mono">{numTrees}</span>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <Layers className="w-4 h-4 text-emerald-500" />
+                Trees: <span className="text-emerald-600 font-mono">{numTrees}</span>
               </label>
               <input
                 type="range"
@@ -628,7 +667,7 @@ const FraudDetectionSystem = () => {
                 step="10"
                 value={numTrees}
                 onChange={(e) => setNumTrees(parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-700 rounded-lg cursor-pointer accent-green-500"
+                className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer accent-emerald-500"
               />
             </div>
 
@@ -636,9 +675,9 @@ const FraudDetectionSystem = () => {
             {modelType === 'randomForest' && (
               <>
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                    <TrendingUp className="w-4 h-4 text-orange-400" />
-                    Fraud Class Weight: <span className="text-orange-400 font-mono">{classWeight}x</span>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    Class Weight: <span className="text-emerald-600 font-mono">{classWeight}x</span>
                   </label>
                   <input
                     type="range"
@@ -647,14 +686,14 @@ const FraudDetectionSystem = () => {
                     step="10"
                     value={classWeight}
                     onChange={(e) => setClassWeight(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg cursor-pointer accent-orange-500"
+                    className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer accent-emerald-500"
                   />
-                  <p className="text-xs text-gray-500">Higher = prioritize catching fraud over avoiding false alarms</p>
+                  <p className="text-xs text-gray-400">Higher = prioritize catching fraud</p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                    Max Tree Depth: <span className="text-blue-400 font-mono">{maxDepth}</span>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    Max Depth: <span className="text-emerald-600 font-mono">{maxDepth}</span>
                   </label>
                   <input
                     type="range"
@@ -663,7 +702,7 @@ const FraudDetectionSystem = () => {
                     step="1"
                     value={maxDepth}
                     onChange={(e) => setMaxDepth(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg cursor-pointer accent-blue-500"
+                    className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer accent-emerald-500"
                   />
                 </div>
               </>
@@ -676,9 +715,9 @@ const FraudDetectionSystem = () => {
                   type="checkbox"
                   checked={useFeatureWeighting}
                   onChange={(e) => setUseFeatureWeighting(e.target.checked)}
-                  className="w-4 h-4 text-purple-500 rounded bg-gray-700 border-gray-600"
+                  className="w-4 h-4 text-emerald-500 rounded border-gray-300 focus:ring-emerald-500"
                 />
-                <span className="text-sm text-gray-300">Feature Weighting</span>
+                <span className="text-sm text-gray-700">Feature Weighting</span>
               </div>
             )}
           </div>
@@ -686,10 +725,10 @@ const FraudDetectionSystem = () => {
           {trainedModel && !training && (
             <button
               onClick={handleReEvaluate}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg"
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium"
             >
               <RefreshCw className="w-4 h-4" />
-              Re-evaluate with New Threshold
+              Re-evaluate
             </button>
           )}
         </div>
@@ -701,39 +740,39 @@ const FraudDetectionSystem = () => {
 
         {/* Algorithm Info */}
         {datasetStats && !training && (
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 mt-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-purple-400" />
-              Current Model: {modelType === 'randomForest' ? 'Random Forest (Supervised)' : 'Isolation Forest (Unsupervised)'}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6 shadow-sm">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-emerald-500" />
+              {modelType === 'randomForest' ? 'Random Forest' : 'Isolation Forest'}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {modelType === 'randomForest' ? (
                 <>
-                  <div className="bg-gray-700/50 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-green-400 font-medium">Why Random Forest?</h4>
-                    <p className="text-gray-300 text-sm mt-1">
-                      Uses labeled data (fraud/not fraud) to learn patterns. Much better at catching fraud when labels are available.
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 className="text-emerald-600 font-medium text-sm">How it works</h4>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Uses labeled data to learn fraud patterns. Best accuracy when labels are available.
                     </p>
                   </div>
-                  <div className="bg-gray-700/50 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-blue-400 font-medium">Class Weighting</h4>
-                    <p className="text-gray-300 text-sm mt-1">
-                      Weight={classWeight}x means fraud cases are weighted {classWeight}x more important than legitimate during training.
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 className="text-emerald-600 font-medium text-sm">Class Weighting</h4>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Fraud cases weighted {classWeight}x more than legitimate transactions.
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="bg-gray-700/50 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-purple-400 font-medium">Why Isolation Forest?</h4>
-                    <p className="text-gray-300 text-sm mt-1">
-                      Doesn't need labels - finds anomalies by isolation. Good for detecting new fraud patterns not in training data.
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 className="text-emerald-600 font-medium text-sm">How it works</h4>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Finds anomalies by isolation. Good for detecting new fraud patterns.
                     </p>
                   </div>
-                  <div className="bg-gray-700/50 rounded-lg p-4 border border-white/10">
-                    <h4 className="text-orange-400 font-medium">Limitation</h4>
-                    <p className="text-gray-300 text-sm mt-1">
-                      Finds ALL anomalies, not just fraud. May flag unusual but legitimate transactions.
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 className="text-amber-600 font-medium text-sm">Limitation</h4>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Detects all anomalies, not just fraud. May flag unusual but legitimate transactions.
                     </p>
                   </div>
                 </>
