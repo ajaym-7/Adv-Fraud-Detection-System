@@ -148,24 +148,6 @@ const FraudDetectionSystem = () => {
     return leftGini + rightGini;
   };
 
-  // Predict with decision tree
-  const predictWithTree = (transaction, tree) => {
-    if (tree.type === 'leaf') {
-      return tree.probability;
-    }
-
-    const value = transaction[tree.feature];
-    if (value === undefined || isNaN(value)) {
-      return 0.5; // Unknown
-    }
-
-    if (value < tree.splitValue) {
-      return predictWithTree(transaction, tree.left);
-    } else {
-      return predictWithTree(transaction, tree.right);
-    }
-  };
-
   // Train Random Forest
   const trainRandomForest = (data, setProgress) => {
     console.log(`Training Random Forest with ${numTrees} trees, maxDepth=${maxDepth}, classWeight=${classWeight}...`);
