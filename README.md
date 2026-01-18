@@ -1,328 +1,181 @@
-#  Advanced Fraud Detection System
+# Advanced Fraud Detection System
 
-A real-time fraud detection dashboard built with React that combines traditional rule-based fraud detection with machine learning behavioral analysis. The system monitors transactions in real-time, identifies suspicious patterns, and provides actionable insights through an intuitive web interface.
+A production-ready fraud detection system built with React that uses real machine learning algorithms to detect fraudulent transactions. The system supports both supervised (Random Forest) and unsupervised (Isolation Forest) learning approaches.
 
-![Fraud Detection Dashboard](https://img.shields.io/badge/React-18.2.0-blue?style=for-the-badge&logo=react)
+![React](https://img.shields.io/badge/React-19.1.0-blue?style=for-the-badge&logo=react)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
+![ML](https://img.shields.io/badge/ML-Real_Algorithms-purple?style=for-the-badge)
 
-##  Live Demo
+## Live Demo
 
-[View Live Demo](https://ajaym-7.github.io/Adv-Fraud-Detection-System/) 
+[View Live Demo](https://ajaym-7.github.io/Adv-Fraud-Detection-System/)
 
-## Screenshots
-![alt text](public/Dashboard_ML_Insights.png)
-![alt text](public/Machine_Learning.png)
-![alt text](public/RiskScoreChart.png)
-![alt text](public/Alerts_&_Live_Transaction_Feed.png)
+## Features
 
-##  Table of Contents
+### Machine Learning Models
 
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Usage](#usage)
-- [System Architecture](#system-architecture)
-- [Machine Learning Features](#machine-learning-features)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+**Random Forest Classifier (Supervised)**
+- Uses labeled fraud data for training
+- Class weighting to handle imbalanced datasets
+- Configurable tree depth and number of trees
+- Achieves 73%+ precision and 74%+ recall on credit card fraud data
 
-##  Features
+**Isolation Forest (Unsupervised)**
+- Anomaly detection without requiring labels
+- Feature weighting for improved accuracy
+- Good for detecting new fraud patterns
 
-### Core Functionality
-- **Real-time Transaction Monitoring**: Live feed of transactions with instant risk assessment
-- **Advanced Risk Scoring**: Multi-factor risk calculation algorithm
-- **Behavioral Analysis**: ML-powered user behavior profiling and anomaly detection
-- **Interactive Dashboard**: Comprehensive analytics with real-time charts
-- **Alert System**: Configurable alerts for different risk levels
-- **Transaction Management**: Automatic blocking/flagging of suspicious transactions
+### Core Capabilities
 
-### Machine Learning Capabilities
-- **User Profiling**: Builds behavioral profiles based on transaction history
-- **Anomaly Detection**: Identifies unusual patterns in spending, timing, and location
-- **Pattern Recognition**: Learns from transaction patterns to improve accuracy
-- **Predictive Analytics**: Forecasts potential fraud based on behavioral trends
-- **Confidence Scoring**: Provides ML confidence levels for risk assessments
+- CSV dataset upload (supports Kaggle Credit Card Fraud dataset)
+- Real-time training progress visualization
+- Configurable model parameters via UI
+- Confusion matrix and performance metrics display
+- Model persistence using IndexedDB
+- Train/test split (80/20) for proper evaluation
 
-### Technical Features
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Real-time Updates**: Live data streaming with 2-second intervals
-- **Performance Optimized**: Efficient rendering with React hooks
-- **Scalable Architecture**: Modular design for easy feature expansion
+### Performance Metrics
 
-##  Technologies Used
+The system displays comprehensive evaluation metrics:
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+- Confusion Matrix (TP, FP, TN, FN)
 
-### Frontend
-- **React 18.2.0** - Modern JavaScript library for building user interfaces
-- **Recharts** - Composable charting library for React
-- **Lucide React** - Beautiful and customizable icons
-- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
-
-### Development Tools
-- **Create React App** - React application boilerplate
-- **ES6+ JavaScript** - Modern JavaScript features
-- **CSS3** - Advanced styling and animations
-- **Git** - Version control system
-
-### Machine Learning & Analytics
-- **Custom ML Algorithms** - Behavioral analysis and pattern detection
-- **Real-time Data Processing** - Live transaction analysis
-- **Statistical Analysis** - Risk scoring and confidence calculations
-
-##  Installation
+## Installation
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn package manager
-- Git
 
-### Steps
+- Node.js v16 or higher
+- npm or yarn
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/fraud-detection-system.git
-   cd fraud-detection-system
-   ```
+### Setup
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+1. Clone the repository
 
-3. **Start the development server**
-   ```bash
-   npm start
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:3000` to view the application
-
-##  Usage
-
-### Starting the System
-
-1. **Launch the Dashboard**: Open the application in your browser
-2. **Start Monitoring**: Click the "Start Monitoring" button to begin real-time transaction analysis
-3. **View Analytics**: Monitor the live dashboard showing:
-   - Transaction statistics
-   - Risk score trends
-   - Security alerts
-   - ML insights
-
-### Key Components
-
-#### Dashboard Overview
-- **Transaction Counter**: Total processed transactions
-- **Risk Metrics**: Flagged and blocked transaction counts
-- **ML Insights**: Real-time behavioral analysis results
-- **Risk Score Chart**: Visual representation of risk trends over time
-
-#### Transaction Monitor
-- **Live Feed**: Real-time transaction stream
-- **Risk Assessment**: Individual transaction risk scores
-- **Status Indicators**: Visual status (approved/flagged/blocked)
-- **ML Anomalies**: Detected behavioral anomalies
-
-#### Alert System
-- **Security Alerts**: High-priority fraud notifications
-- **Risk Factors**: Detailed breakdown of suspicious elements
-- **Severity Levels**: Color-coded alert priorities
-- **Timestamps**: Precise timing of security events
-
-##  System Architecture
-
-### Data Flow
-```
-Transaction Generation → Risk Assessment → ML Analysis → Alert Generation → Dashboard Update
+```bash
+git clone https://github.com/ajaym-7/Adv-Fraud-Detection-System.git
+cd Adv-Fraud-Detection-System
 ```
 
-### Core Modules
+2. Install dependencies
 
-#### 1. Transaction Generator
-- Simulates realistic transaction data
-- Includes various merchant types and locations
-- Generates diverse risk scenarios
-
-#### 2. Risk Assessment Engine
-- **Traditional Rules**: Amount, time, location-based scoring
-- **Device Analysis**: Device risk profiling
-- **Velocity Checks**: Transaction frequency analysis
-- **Geographic Analysis**: Location-based risk assessment
-
-#### 3. Machine Learning Module
-- **User Profiling**: Behavioral pattern learning
-- **Anomaly Detection**: Statistical deviation analysis
-- **Pattern Recognition**: Merchant and timing preferences
-- **Confidence Scoring**: ML prediction reliability
-
-#### 4. Alert Management
-- **Risk Thresholds**: Configurable alert triggers
-- **Severity Classification**: Multi-level alert system
-- **Notification System**: Real-time alert delivery
-
-##  Machine Learning Features
-
-### Behavioral Analysis
-The system implements several ML algorithms to detect fraudulent patterns:
-
-#### User Profiling
-- **Transaction History**: Learns spending patterns
-- **Merchant Preferences**: Identifies favorite merchants
-- **Time Patterns**: Analyzes typical transaction times
-- **Location Habits**: Maps usual transaction locations
-
-#### Anomaly Detection Algorithms
-- **Amount Deviation**: Detects unusual transaction amounts
-- **Merchant Anomalies**: Flags transactions at unfamiliar merchants
-- **Time-based Anomalies**: Identifies off-pattern timing
-- **Location Anomalies**: Detects geographic inconsistencies
-
-#### Confidence Scoring
-- **Statistical Confidence**: Measures prediction reliability
-- **Learning Progression**: Improves accuracy over time
-- **Threshold Adaptation**: Adjusts sensitivity based on patterns
-
-##  Configuration
-
-### Risk Thresholds
-Customize risk scoring parameters in `FraudDetectionSystem.jsx`:
-
-```javascript
-const riskThresholds = {
-  highAmount: 10000,
-  mediumAmount: 5000,
-  lowAmount: 1000,
-  anomalyThreshold: 0.7,
-  blockingThreshold: 70,
-  flaggingThreshold: 40
-};
+```bash
+npm install
 ```
 
-### ML Parameters
-Adjust machine learning sensitivity:
+3. Start the development server
 
-```javascript
-const mlConfig = {
-  minTransactionsForProfiling: 3,
-  maxHistoryLength: 10,
-  anomalyMultiplier: 2.0,
-  confidenceThreshold: 0.8
-};
+```bash
+npm start
 ```
 
-##  Performance Metrics
+4. Open http://localhost:3000
 
-### System Capabilities
-- **Transaction Processing**: 30 transactions/minute
-- **Response Time**: <100ms per transaction
-- **Memory Usage**: ~50MB typical usage
-- **Accuracy**: 94% fraud detection rate (simulated)
+## Usage
 
-### Browser Compatibility
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+### Quick Start
 
-##  Security Considerations
+1. Download the Credit Card Fraud Detection dataset from Kaggle:
+   https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
 
-### Data Privacy
-- No real financial data is processed
-- All data is generated for demonstration purposes
-- Client-side only processing (no server storage)
+2. Upload the creditcard.csv file using the "Select CSV File" button
 
-### Best Practices Implemented
-- Input validation and sanitization
-- Secure coding practices
-- Performance optimization
-- Error handling and logging
+3. Configure model parameters:
+   - Select model type (Random Forest recommended)
+   - Adjust detection threshold
+   - Set number of trees
+   - Configure class weight (for Random Forest)
 
-##  Deployment
+4. Click "Train Model on This Dataset"
 
-### GitHub Pages Deployment
+5. Review performance metrics and confusion matrix
 
-1. **Build the project**
-   ```bash
-   npm run build
-   ```
+### Model Configuration
 
-2. **Deploy to GitHub Pages**
-   ```bash
-   npm install --save-dev gh-pages
-   npm run deploy
-   ```
+**Random Forest Settings**
+- Detection Threshold: 0.5 (default) - Lower for more recall, higher for more precision
+- Number of Trees: 100 (default) - More trees = better accuracy but slower training
+- Fraud Class Weight: 100x (default) - Higher values prioritize catching fraud
+- Max Tree Depth: 15 (default) - Deeper trees capture more complex patterns
 
-### Environment Variables
-Create a `.env` file for configuration:
-```env
-REACT_APP_VERSION=1.0.0
-REACT_APP_ENVIRONMENT=production
+**Isolation Forest Settings**
+- Detection Threshold: 0.6 (default)
+- Number of Trees: 100 (default)
+- Feature Weighting: Enabled (default) - Weights important features higher
+
+## Dataset Format
+
+The system expects CSV files with:
+- Numeric feature columns (V1-V28, Amount, Time)
+- A "Class" column (0 = legitimate, 1 = fraud)
+- Header row with column names
+
+Compatible with the Kaggle Credit Card Fraud Detection dataset.
+
+## Technical Stack
+
+- React 19.1.0
+- Tailwind CSS
+- Recharts (visualization)
+- Lucide React (icons)
+- IndexedDB (model storage)
+
+## Algorithm Details
+
+### Random Forest Implementation
+
+- Bootstrap sampling with fraud oversampling
+- Gini impurity with class weighting
+- Random feature subset selection (sqrt of total features)
+- Configurable stopping criteria (min samples, max depth)
+
+### Isolation Forest Implementation
+
+- Random feature selection for splits
+- Path length calculation for anomaly scoring
+- Configurable contamination rate
+- Optional feature weighting
+
+## Performance Results
+
+Tested on Kaggle Credit Card Fraud dataset (284,807 transactions, 492 frauds):
+
+| Model | Precision | Recall | F1 Score |
+|-------|-----------|--------|----------|
+| Random Forest | 73.08% | 74.03% | 73.55% |
+| Isolation Forest | 16.40% | 36.94% | 22.71% |
+
+## Project Structure
+
+```
+src/
+  App.js                    # Main application entry
+  FraudDetectionSystem.jsx  # Core ML component
+  components/
+    DataUploader.jsx        # CSV upload and parsing
+    MetricsDashboard.jsx    # Performance metrics display
+  utils/
+    modelStorage.js         # IndexedDB model persistence
 ```
 
-##  Contributing
-
-Contributions are welcome! Please follow these steps:
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-### Development Guidelines
-- Follow React best practices
-- Maintain code documentation
-- Add unit tests for new features
-- Follow the existing code style
+## License
 
-##  License
+MIT License - see LICENSE file for details.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Author
 
-##  Contact
+Ajay More
 
-**Your Name** - the7ajaymore@gmail.com
+## Acknowledgments
 
-**Project Link**: [https://github.com/yourusername/fraud-detection-system](https://github.com/yourusername/fraud-detection-system)
-
-**LinkedIn**: [Your LinkedIn Profile](https://www.linkedin.com/in/ajay-m-2076a1256/)
-
-##  Acknowledgments
-
-- React team for the excellent framework
-- Recharts for the beautiful charting library
-- Lucide React for the comprehensive icon set
-- Tailwind CSS for the utility-first approach
-- Open source community for inspiration and resources
-
-##  Future Enhancements
-
-### Planned Features
-- [ ] Real-time WebSocket integration
-- [ ] Advanced ML models (neural networks)
-- [ ] Historical data analysis
-- [ ] Export functionality for reports
-- [ ] Multi-language support
-- [ ] Mobile app development
-- [ ] API integration capabilities
-- [ ] Advanced user management
-- [ ] Customizable dashboards
-- [ ] Email notification system
-
-### Technical Improvements
-- [ ] Unit test coverage
-- [ ] Performance optimization
-- [ ] Code splitting and lazy loading
-- [ ] Progressive Web App (PWA) features
-- [ ] Advanced error handling
-- [ ] Accessibility improvements (WCAG compliance)
-
----
-
-*This project demonstrates advanced React development skills, machine learning integration, and modern web development practices. It showcases the ability to build complex, real-time applications with sophisticated data visualization and analysis capabilities.*
-
-![React](https://img.shields.io/badge/React-18.2.0-blue?style=for-the-badge&logo=react)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?style=for-the-badge&logo=javascript)
-![Tailwind](https://img.shields.io/badge/Tailwind-CSS-blue?style=for-the-badge&logo=tailwindcss)
+- Kaggle Credit Card Fraud Detection dataset
+- Machine Learning Group - ULB (dataset creators)

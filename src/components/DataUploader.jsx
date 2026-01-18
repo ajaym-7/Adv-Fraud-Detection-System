@@ -9,18 +9,26 @@ const DataUploader = ({ onDataLoaded, onModelTrained }) => {
 
   const parseCSV = (text) => {
     const lines = text.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
+    if (lines.length < 2) {
+      throw new Error('CSV file is empty or invalid');
+    }
     
-    const data = lines.slice(1).map((line, index) => {
+    const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
+    console.log('CSV Headers:', headers);
+    
+    const data = lines.slice(1).filter(line => line.trim()).map((line, index) => {
       const values = line.split(',');
       const row = {};
       headers.forEach((header, i) => {
-        const value = values[i]?.trim();
+        const value = values[i]?.trim().replace(/['"]/g, '');
         // Convert numeric values
-        row[header] = isNaN(value) ? value : parseFloat(value);
+        row[header] = isNaN(value) || value === '' ? value : parseFloat(value);
       });
       return row;
     });
+
+    console.log(`Parsed ${data.length} rows with columns:`, headers);
+    console.log('Sample row:', data[0]);
 
     return { headers, data };
   };
@@ -87,23 +95,23 @@ const DataUploader = ({ onDataLoaded, onModelTrained }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+    <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Database className="w-6 h-6" />
-          Real Data Upload
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <Database className="w-5 h-5 text-blue-400" />
+          Data Upload
         </h2>
       </div>
 
       {/* Upload Section */}
       <div className="mb-6">
-        <label className="block mb-2 text-sm font-medium text-gray-700">
+        <label className="block mb-2 text-sm font-medium text-gray-300">
           Upload Fraud Detection Dataset (CSV)
         </label>
         <div className="flex items-center gap-4">
-          <label className="flex-1 flex flex-col items-center px-4 py-6 bg-white text-blue rounded-lg shadow-lg tracking-wide border border-blue-500 cursor-pointer hover:bg-blue-50">
-            <Upload className="w-8 h-8 text-blue-500" />
-            <span className="mt-2 text-base leading-normal">
+          <label className="flex-1 flex flex-col items-center px-4 py-6 bg-white/5 rounded-xl border-2 border-dashed border-white/30 cursor-pointer hover:bg-white/10 hover:border-blue-500/50 transition-all">
+            <Upload className="w-8 h-8 text-blue-400" />
+            <span className="mt-2 text-base text-gray-300">
               {uploading ? 'Uploading...' : 'Select CSV File'}
             </span>
             <input
@@ -122,50 +130,50 @@ const DataUploader = ({ onDataLoaded, onModelTrained }) => {
 
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
+        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-red-800">Error</p>
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm font-medium text-red-300">Error</p>
+            <p className="text-sm text-red-400">{error}</p>
           </div>
         </div>
       )}
 
       {/* Dataset Info */}
       {datasetInfo && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+        <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 mb-4">
           <div className="flex items-start gap-2 mb-3">
-            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-green-400 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-green-800">Dataset Loaded Successfully</p>
-              <p className="text-sm text-green-600">{datasetInfo.filename}</p>
+              <p className="text-sm font-medium text-green-300">Dataset Loaded Successfully</p>
+              <p className="text-sm text-green-400">{datasetInfo.filename}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            <div className="bg-white p-3 rounded-lg">
-              <p className="text-xs text-gray-500">Total Transactions</p>
-              <p className="text-xl font-bold text-gray-900">{datasetInfo.totalTransactions.toLocaleString()}</p>
+            <div className="bg-gray-800/50 p-3 rounded-lg border border-white/10">
+              <p className="text-xs text-gray-400">Total Transactions</p>
+              <p className="text-xl font-bold text-white">{datasetInfo.totalTransactions.toLocaleString()}</p>
             </div>
-            <div className="bg-white p-3 rounded-lg">
-              <p className="text-xs text-gray-500">Fraudulent</p>
-              <p className="text-xl font-bold text-red-600">{datasetInfo.fraudulent.toLocaleString()}</p>
+            <div className="bg-gray-800/50 p-3 rounded-lg border border-white/10">
+              <p className="text-xs text-gray-400">Fraudulent</p>
+              <p className="text-xl font-bold text-red-400">{datasetInfo.fraudulent.toLocaleString()}</p>
             </div>
-            <div className="bg-white p-3 rounded-lg">
-              <p className="text-xs text-gray-500">Legitimate</p>
-              <p className="text-xl font-bold text-green-600">{datasetInfo.legitimate.toLocaleString()}</p>
+            <div className="bg-gray-800/50 p-3 rounded-lg border border-white/10">
+              <p className="text-xs text-gray-400">Legitimate</p>
+              <p className="text-xl font-bold text-green-400">{datasetInfo.legitimate.toLocaleString()}</p>
             </div>
-            <div className="bg-white p-3 rounded-lg">
-              <p className="text-xs text-gray-500">Fraud Rate</p>
-              <p className="text-xl font-bold text-orange-600">{datasetInfo.fraudPercentage}%</p>
+            <div className="bg-gray-800/50 p-3 rounded-lg border border-white/10">
+              <p className="text-xs text-gray-400">Fraud Rate</p>
+              <p className="text-xl font-bold text-orange-400">{datasetInfo.fraudPercentage}%</p>
             </div>
           </div>
 
           <div className="mt-4">
-            <p className="text-xs text-gray-500 mb-2">Available Columns ({datasetInfo.columns.length}):</p>
+            <p className="text-xs text-gray-400 mb-2">Available Columns ({datasetInfo.columns.length}):</p>
             <div className="flex flex-wrap gap-2">
               {datasetInfo.columns.map((col, idx) => (
-                <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                <span key={idx} className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
                   {col}
                 </span>
               ))}
@@ -176,7 +184,7 @@ const DataUploader = ({ onDataLoaded, onModelTrained }) => {
           <button
             onClick={handleTrainModel}
             disabled={training}
-            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-4 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
           >
             <FileText className="w-4 h-4" />
             {training ? 'Training Model...' : 'Train Model on This Dataset'}
@@ -185,16 +193,16 @@ const DataUploader = ({ onDataLoaded, onModelTrained }) => {
       )}
 
       {/* Sample Dataset Info */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm font-medium text-blue-900 mb-2">Need sample data?</p>
-        <p className="text-sm text-blue-700 mb-2">
+      <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+        <p className="text-sm font-medium text-blue-300 mb-2">Need sample data?</p>
+        <p className="text-sm text-gray-400 mb-2">
           Download the Credit Card Fraud Detection dataset from Kaggle:
         </p>
         <a
           href="https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-blue-600 hover:text-blue-800 underline"
+          className="text-sm text-blue-400 hover:text-blue-300 underline"
         >
           https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
         </a>
